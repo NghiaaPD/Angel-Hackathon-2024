@@ -24,7 +24,7 @@ with st.sidebar:
 st.title("Object Detection using YOLOv9")
 
 try:
-    model = YOLO(model_path).cuda()
+    model = YOLO(model_path)
 except Exception as ex:
     st.error(
         f"Unable to load model. Check the specified path: {model_path}")
