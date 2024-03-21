@@ -15,7 +15,7 @@ with st.sidebar:
     st.header("Video Detection")
     source_vid = st.sidebar.selectbox(
         "Choose a video...",
-        ["../video/pexels_videos_2053100 (2160p).mp4", "../video/pexels_videos_2670 (1080p).mp4", "../video/video (2160p).mp4"])
+        ["./video/pexels_videos_2053100 (2160p).mp4", "./video/pexels_videos_2670 (1080p).mp4", "./video/video (2160p).mp4"])
 
     # Model Options
     confidence = float(st.slider(
