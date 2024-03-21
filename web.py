@@ -2,7 +2,7 @@ import cv2
 import streamlit as st
 from ultralytics import YOLO
 
-model_path = "../model/best.pt"
+model_path = "model/best.pt"
 
 st.set_page_config(
     page_title="Object Detection using YOLOv9",
