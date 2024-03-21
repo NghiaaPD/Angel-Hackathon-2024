@@ -3,7 +3,6 @@ ultralytics
 streamlit
 cv
 opencv-contrib-python
-libgl1
 seaborn
 jsonschema
 torchvision
