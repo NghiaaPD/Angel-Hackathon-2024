@@ -1,8 +1,9 @@
 import cv2
 import streamlit as st
 from ultralytics import YOLO
+import tempfile
 
-model_path = "model/best.pt"
+model_path = "model/angelhack_yolov9.pt"
 
 st.set_page_config(
     page_title="Object Detection using YOLOv9",
@@ -13,9 +14,7 @@ st.set_page_config(
 
 with st.sidebar:
     st.header("Video Detection")
-    source_vid = st.sidebar.selectbox(
-        "Choose a video...",
-        ["./video/pexels_videos_2053100 (2160p).mp4", "./video/pexels_videos_2670 (1080p).mp4", "./video/video (2160p).mp4"])
+    source_vid = st.sidebar.file_uploader("Choose a file", type=["mp4", "mov", "avi", "mkv"])
 
     # Model Options
     confidence = float(st.slider(
@@ -24,7 +23,7 @@ with st.sidebar:
 st.title("Object Detection using YOLOv9")
 
 try:
-    model = YOLO(model_path)
+    model = YOLO(model_path).cuda()
 except Exception as ex:
     st.error(
         f"Unable to load model. Check the specified path: {model_path}")
@@ -32,18 +31,17 @@ except Exception as ex:
 st.write("Model loaded successfully!")
 
 if source_vid is not None:
-    with open(str(source_vid), 'rb') as video_file:
-        video_bytes = video_file.read()
-    if video_bytes:
-        st.video(video_bytes)
     if st.sidebar.button('Detect Objects'):
-        vid_cap = cv2.VideoCapture(
-            source_vid)
+        with tempfile.NamedTemporaryFile(delete=False) as temp_file:
+            temp_file.write(source_vid.read())
+            temp_filename = temp_file.name
+
+        vid_cap = cv2.VideoCapture(temp_filename)
         st_frame = st.empty()
-        while (vid_cap.isOpened()):
+        while vid_cap.isOpened():
             success, image = vid_cap.read()
             if success:
-                image = cv2.resize(image, (720, int(720*(9/16))))
+                image = cv2.resize(image, (720, int(720 * (9 / 16))))
                 res = model.predict(image, conf=confidence)
                 result_tensor = res[0].boxes
                 res_plotted = res[0].plot()
