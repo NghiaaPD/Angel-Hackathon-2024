@@ -6,9 +6,7 @@ import tempfile
 import numpy as np
 from tensorflow.keras.models import model_from_json
 import easyocr
-from PIL import Image
-import torch
-from transformers import AutoModelForSequenceClassification, AutoTokenizer
+
 
 # Paths to models
 logo_detection_model_path = "./model/angelhack_yolov9.pt"
