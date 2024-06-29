@@ -10,6 +10,7 @@ logo_detection_model_path = "./model/angelhack_yolov9.pt"  # Ensure this path is
 face_classifier_path = "./model/haarcascade_frontalface_default.xml"
 model_json_file = "./model/model.json"
 model_weights_file = "./model/Latest_Model.h5"
+human_detection_model_path = "./model/Human_detection.pt"
 
 # Streamlit page configuration
 st.set_page_config(
@@ -24,7 +25,7 @@ with st.sidebar:
 
     option = st.selectbox(
         "Choose detection type:",
-        ("Logo detect", "Emotion detect", "Drink"),
+        ("Logo detect", "Emotion detect", "Human"),
         placeholder="Select detection type..."
     )
     source_vid = st.file_uploader("Choose a file", type=["jpeg", "jpg", "png", "webp", "mp4"])
@@ -92,3 +93,32 @@ elif option == "Emotion detect" and source_vid is not None:
                 st.image(image, caption='Detected Emotions', channels="BGR", use_column_width=True)
             else:
                 st.error("Error: Unable to read the uploaded image.")
+
+elif option == "Human" and source_vid is not None:
+    try:
+        model = YOLO(human_detection_model_path)
+        st.success("Model loaded successfully!")
+    except Exception as ex:
+        st.error(f"Unable to load model. Check the specified path: {logo_detection_model_path}")
+        st.error(ex)
+
+    if st.sidebar.button('Logo Detect'):
+        with tempfile.NamedTemporaryFile(delete=False) as temp_file:
+            temp_file.write(source_vid.read())
+            temp_filename = temp_file.name
+
+            vid_cap = cv2.VideoCapture(temp_filename)
+            st_frame = st.empty()
+            while vid_cap.isOpened():
+                success, image = vid_cap.read()
+                if success:
+                    image = cv2.resize(image, (720, int(1080 * (9 / 16))))
+                    res = model.predict(image, conf=0.3)
+                    result_tensor = res[0].boxes
+                    res_plotted = res[0].plot()
+                    st_frame.image(res_plotted, caption='Detected Video', channels="BGR", use_column_width=True)
+                    st.write(f"Total number of humans detected: **{len(result_tensor)}**")
+                else:
+                    vid_cap.release()
+                    break
+
