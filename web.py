@@ -1,12 +1,17 @@
 import cv2
+from fuzzywuzzy import fuzz
 import streamlit as st
 from ultralytics import YOLO
 import tempfile
 import numpy as np
 from tensorflow.keras.models import model_from_json
+import easyocr
+from PIL import Image
+import torch
+from transformers import AutoModelForSequenceClassification, AutoTokenizer
 
 # Paths to models
-logo_detection_model_path = "./model/angelhack_yolov9.pt"  # Ensure this path is correct
+logo_detection_model_path = "./model/angelhack_yolov9.pt"
 face_classifier_path = "./model/haarcascade_frontalface_default.xml"
 model_json_file = "./model/model.json"
 model_weights_file = "./model/Latest_Model.h5"
@@ -25,7 +30,7 @@ with st.sidebar:
 
     option = st.selectbox(
         "Choose detection type:",
-        ("Logo detect", "Emotion detect", "Human"),
+        ("Logo detect", "Emotion detect", "Human", "OCR"),
         placeholder="Select detection type..."
     )
     source_vid = st.file_uploader("Choose a file", type=["jpeg", "jpg", "png", "webp", "mp4"])
@@ -122,3 +127,42 @@ elif option == "Human" and source_vid is not None:
                     vid_cap.release()
                     break
 
+elif option == "OCR" and source_vid is not None:
+    strong_list = ["Tiger", "Heineken", "BiaViet", "Strongbow", "Larue", "Bivina", "Edelweiss"]
+
+    with tempfile.NamedTemporaryFile(delete=False) as temp_file:
+        temp_file.write(source_vid.read())
+        temp_filename = temp_file.name
+
+    image = cv2.imread(temp_filename)
+
+    if image is not None:
+        reader = easyocr.Reader(['ch_sim', 'en'])
+        result = reader.readtext(image)
+
+        if st.sidebar.button('Extract Text'):
+
+            max_score = 0.0
+            best_match = ""
+            detected_text = ""
+
+            for text in result:
+                current_text = text[1]
+
+                for item in strong_list:
+                    similarity_score = fuzz.ratio(current_text.lower(), item.lower())
+                    if similarity_score > max_score:
+                        max_score = similarity_score
+                        best_match = item
+                        detected_text = current_text
+
+            for text in result:
+                if text[1] == detected_text:
+                    bbox = text[0]
+                    cv2.rectangle(image, (bbox[0][0], bbox[0][1]), (bbox[2][0], bbox[2][1]), (255, 0, 0), 2)
+                    break
+
+            st.image(image, caption='Detected Text with Highest Score', channels="BGR", use_column_width=True)
+
+    else:
+        st.error("Error: Unable to read the uploaded image.")
