@@ -5,13 +5,13 @@ import tempfile
 import numpy as np
 from tensorflow.keras.models import model_from_json
 
-
-logo_detection_model_path = "../model/angelhack_yolov9.pt"
-
-face_classifier = cv2.CascadeClassifier(r"./model/haarcascade_frontalface_default.xml")
+# Paths to models
+logo_detection_model_path = "./model/angelhack_yolov9.pt"  # Ensure this path is correct
+face_classifier_path = "./model/haarcascade_frontalface_default.xml"
 model_json_file = "./model/model.json"
 model_weights_file = "./model/Latest_Model.h5"
 
+# Streamlit page configuration
 st.set_page_config(
     page_title="Object Detection using YOLOv9",
     page_icon="🤖",
@@ -23,24 +23,19 @@ with st.sidebar:
     st.header("Video Detection")
 
     option = st.selectbox(
-        "How would you like to be contacted?",
+        "Choose detection type:",
         ("Logo detect", "Emotion detect", "Drink"),
-        index=None,
-        placeholder="Select contact method...",
+        placeholder="Select detection type..."
     )
-    source_vid = st.sidebar.file_uploader("Choose a file", type=["jpeg", "jpg", "png", "webp"])
-
-    # confidence = float(st.slider(
-    #     "Select Model Confidence", 25, 100, 40)) / 100
+    source_vid = st.file_uploader("Choose a file", type=["jpeg", "jpg", "png", "webp"])
 
 if option == "Logo detect" and source_vid is not None:
     try:
         model = YOLO(logo_detection_model_path)
+        st.success("Model loaded successfully!")
     except Exception as ex:
-        st.error(
-            f"Unable to load model. Check the specified path: {logo_detection_model_path}")
+        st.error(f"Unable to load model. Check the specified path: {logo_detection_model_path}")
         st.error(ex)
-    st.write("Model loaded successfully!")
 
     if st.sidebar.button('Logo Detect'):
         with tempfile.NamedTemporaryFile(delete=False) as temp_file:
@@ -56,21 +51,22 @@ if option == "Logo detect" and source_vid is not None:
                     res = model.predict(image, conf=0.1)
                     result_tensor = res[0].boxes
                     res_plotted = res[0].plot()
-                    st_frame.image(res_plotted,
-                                   caption='Detected Video',
-                                   channels="BGR",
-                                   use_column_width=True
-                                   )
+                    st_frame.image(res_plotted, caption='Detected Video', channels="BGR", use_column_width=True)
                 else:
                     vid_cap.release()
                     break
 
 elif option == "Emotion detect" and source_vid is not None:
-
-    with open(model_json_file, "r") as json_file:
-        loaded_model_json = json_file.read()
-        classifier = model_from_json(loaded_model_json)
-        classifier.load_weights(model_weights_file)
+    try:
+        face_classifier = cv2.CascadeClassifier(face_classifier_path)
+        with open(model_json_file, "r") as json_file:
+            loaded_model_json = json_file.read()
+            classifier = model_from_json(loaded_model_json)
+            classifier.load_weights(model_weights_file)
+        st.success("Emotion detection model loaded successfully!")
+    except Exception as ex:
+        st.error(f"Unable to load model or classifier. Check the specified paths.")
+        st.error(ex)
 
     if st.sidebar.button('Emotion Detect'):
         with tempfile.NamedTemporaryFile(delete=False) as temp_file:
