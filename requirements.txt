@@ -1,6 +1,6 @@
-opencv-python
-ultralytics
-streamlit
+opencv-python~=4.8.1.78
+ultralytics~=8.2.46
+streamlit~=1.35.0
 cv
 opencv-contrib-python
 seaborn
@@ -8,3 +8,5 @@ jsonschema
 torchvision
 thop
 altair
+numpy~=1.24.3
+tensorflow~=2.15.0
