@@ -10,3 +10,4 @@ thop
 altair
 numpy~=1.24.3
 tensorflow~=2.15.0
+dill
