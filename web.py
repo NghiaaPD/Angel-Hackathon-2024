@@ -27,7 +27,7 @@ with st.sidebar:
         ("Logo detect", "Emotion detect", "Drink"),
         placeholder="Select detection type..."
     )
-    source_vid = st.file_uploader("Choose a file", type=["jpeg", "jpg", "png", "webp"])
+    source_vid = st.file_uploader("Choose a file", type=["jpeg", "jpg", "png", "webp", "mp4"])
 
 if option == "Logo detect" and source_vid is not None:
     try:
