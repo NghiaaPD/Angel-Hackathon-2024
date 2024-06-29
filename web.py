@@ -6,7 +6,7 @@ import numpy as np
 from tensorflow.keras.models import model_from_json
 
 
-logo_detection_model_path = "model/angelhack_yolov9.pt"
+logo_detection_model_path = "./model/angelhack_yolov9.pt"
 
 face_classifier = cv2.CascadeClassifier(r"./model/haarcascade_frontalface_default.xml")
 model_json_file = "./model/model.json"
